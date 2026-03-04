@@ -73,14 +73,9 @@ class RecommendResponse(BaseModel):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    log.info("Starting up - pre-loading recommendation engine...")
-    try:
-        from recommender.engine import _load_resources
-        _load_resources()
-        log.info("Engine loaded successfully")
-    except Exception as e:
-        log.error(f"Engine load failed: {e}")
-        log.warning("API will attempt to load on first request")
+    # Don't load engine here — it takes 1–2 min and blocks port binding.
+    # Render times out waiting for an open port. Engine loads on first /recommend.
+    log.info("Starting up (engine will load on first request)...")
     yield
     log.info("Shutting down")
 
