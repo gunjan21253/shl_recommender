@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SHL Assessment Recommender — Approach</title>
+<style>
+body { font-family: system-ui, sans-serif; max-width: 700px; margin: 1in auto; padding: 0 1em; font-size: 11pt; line-height: 1.4; }
+h1 { font-size: 14pt; margin-top: 0.5em; }
+h2 { font-size: 12pt; margin-top: 0.8em; }
+h3 { font-size: 11pt; }
+ul { margin: 0.3em 0; padding-left: 1.2em; }
+p { margin: 0.3em 0; }
+code { background: #f0f0f0; padding: 0.1em 0.3em; font-size: 0.95em; }
+@media print { body { margin: 0.5in; } }
+</style>
+</head>
+<body>
+<h1>SHL Assessment Recommendation System — Approach & Optimization (2-page submission)</h1>
+<p></p>
+<h2>Problem & Approach</h2>
+<p></p>
+<p><strong>Goal:</strong> Given a natural language query or job description, return 5–10 relevant SHL Individual Test Solutions (name + URL). The system is evaluated on <strong>Mean Recall@10</strong> and must <strong>balance</strong> recommendations when queries span both technical and behavioral skills.</p>
+<p></p>
+<p><strong>Solution:</strong> A three-stage pipeline: (1) <strong>Hybrid retrieval</strong> (FAISS + BM25, RRF merge) → (2) <strong>Constraint filtering</strong> (duration, remote) → (3) <strong>LLM re-ranking</strong> (Gemini) for relevance and balance.</p>
+<p></p>
+<p>---</p>
+<p></p>
+<h2>Pipeline Details</h2>
+<p></p>
+<ul>
+<li><strong>Stage 1 — Hybrid retrieval:</strong> Sentence-Transformers (<code>all-mpnet-base-v2</code>) + FAISS for dense search; BM25 for sparse keyword search. RRF merges rankings. Retrieves top-80 candidates (widened from 50 to improve recall).</li>
+<li><strong>Stage 2 — Constraints:</strong> Regex-based parsing for max duration and remote support; filters applied with fallback if too few candidates remain.</li>
+<li><strong>Stage 3 — LLM re-ranking:</strong> Gemini (with fallback models on 429) does (a) query analysis (role, skills, needs_balance) and (b) selection of best 5–10 from the candidate pool. Must-consider injection ensures generic assessments (e.g. OPQ, Verify, English) appear in the pool when relevant.</li>
+</ul>
+<p></p>
+<p>---</p>
+<p></p>
+<h2>Performance Optimization Efforts</h2>
+<p></p>
+<p><strong>Initial baseline (semantic-only, no LLM):</strong> Low recall on keyword-heavy queries; no balance between K (knowledge) and P (personality) types.</p>
+<p></p>
+<p><strong>Optimizations applied:</strong></p>
+<p></p>
+<p>1. <strong>Hybrid search (FAISS + BM25 + RRF)</strong> — Large recall gain on exact skill names (e.g. SQL, Java).</p>
+<p>2. <strong>Stronger embeddings</strong> — Switched to <code>all-mpnet-base-v2</code>; better semantic match on multi-skill queries.</p>
+<p>3. <strong>Query expansion & rich text</strong> — Expanded query terms and embedded assessment text with test types and metadata.</p>
+<p>4. <strong>LLM re-ranking (Gemini)</strong> — Query analysis + re-rank for relevance and balance (K + P when needed).</p>
+<p>5. <strong>URL normalization</strong> — Slug-based comparison in evaluation to match training labels (multiple URL formats).</p>
+<p>6. <strong>Larger retrieval & must-consider</strong> — Top-80 retrieval, 40 candidates to LLM, injection of generic assessments (OPQ, Verify, English, etc.) so they are not missed.</p>
+<p>7. <strong>Prompt and model tuning</strong> — Clarified “avoid only true duplicates”; added few-shot examples; model fallback on 429 (e.g. gemini-2.0-flash).</p>
+<p></p>
+<p><strong>Evaluation:</strong> Labeled train set (10 queries, sheet <code>Train-Set</code>). Metrics: Mean Recall@10 (primary), Precision@10, NDCG@10. Run:</p>
+<p><code>python -m evaluation.evaluate --data "Gen_AI Dataset.xlsx" --sheet "Train-Set" --direct</code></p>
+<p></p>
+<p>---</p>
+<p></p>
+<h2>Data & Tech Stack</h2>
+<p></p>
+<ul>
+<li><strong>Data:</strong> Scraper (requests + BeautifulSoup) crawls SHL product catalog; 377+ Individual Test Solutions; no Pre-packaged Job Solutions. Index build: <code>python -m recommender.build_index</code>.</li>
+<li><strong>Stack:</strong> FastAPI, FAISS, BM25, Sentence-Transformers, Google Gemini API. Frontend: vanilla HTML/JS served by API.</li>
+</ul>
+<p></p>
+<p>---</p>
+<p></p>
+<h2>Submission Checklist</h2>
+<p></p>
+<ul>
+<li><strong>API:</strong> <code>GET /health</code>, <code>POST /recommend</code> (JSON; 1–10 assessments with <code>name</code>, <code>url</code>, etc.).</li>
+<li><strong>CSV:</strong> <code>Query</code>, <code>Assessment_url</code> on the 9 test queries (sheet <code>Test-Set</code>); generated with</li>
+</ul>
+<p>  <code>python -m evaluation.generate_predictions --test "Gen_AI Dataset.xlsx" --sheet "Test-Set" --output submission.csv --direct</code>.</p>
+</body>
+</html>

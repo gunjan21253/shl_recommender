@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHL Assessment Recommender</title>
+    <style>
+        :root {
+            --primary: #0052CC;
+            --primary-dark: #003d99;
+            --primary-light: #4C9AFF;
+            --bg: #f7f8fc;
+            --surface: #ffffff;
+            --text: #1a1a2e;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --success: #16a34a;
+            --radius: 12px;
+            --shadow: 0 2px 12px rgba(0,0,0,0.07);
+        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 2.5rem 1rem;
+            text-align: center;
+        }
+        .header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; }
+        .header p { opacity: 0.9; margin-top: 0.4rem; font-size: 1.05rem; }
+
+        /* Container */
+        .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1rem; }
+
+        /* Search Card */
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .card-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+        textarea {
+            width: 100%;
+            min-height: 110px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 0.9rem 1rem;
+            font-size: 0.95rem;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.2s;
+            color: var(--text);
+        }
+        textarea:focus { outline: none; border-color: var(--primary); }
+        textarea::placeholder { color: #a0aec0; }
+
+        .search-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.7rem 1.8rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,82,204,0.3); }
+        .btn:active { transform: translateY(0); }
+        .btn:disabled { background: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn svg { width: 18px; height: 18px; }
+
+        /* Sample Queries */
+        .samples { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
+        .sample-chip {
+            background: #eef2ff;
+            color: var(--primary);
+            border: 1px solid #c7d2fe;
+            padding: 0.35rem 0.85rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .sample-chip:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* Loading */
+        .loading { display: none; text-align: center; padding: 2.5rem; }
+        .loading.active { display: block; }
+        .spinner {
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading p { color: var(--text-muted); font-size: 0.95rem; }
+
+        /* Results */
+        .results { display: none; }
+        .results.active { display: block; }
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .results-header h2 { font-size: 1.2rem; font-weight: 600; }
+        .results-count {
+            background: #eef2ff;
+            color: var(--primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: var(--surface);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        .results-table th {
+            background: #f8fafc;
+            padding: 0.8rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid var(--border);
+        }
+        .results-table td {
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.9rem;
+            vertical-align: top;
+        }
+        .results-table tbody tr:hover td { background: #f8fafc; }
+        .results-table tbody tr:last-child td { border-bottom: none; }
+
+        .assessment-name {
+            font-weight: 600;
+            color: var(--primary);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.2rem;
+        }
+        .assessment-name:hover { text-decoration: underline; }
+        .assessment-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+            max-width: 350px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.55rem;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            margin: 0.1rem;
+        }
+        .badge-K { background: #dbeafe; color: #1d4ed8; }
+        .badge-P { background: #fce7f3; color: #be185d; }
+        .badge-A { background: #dcfce7; color: #15803d; }
+        .badge-B { background: #fef9c3; color: #a16207; }
+        .badge-C { background: #e0e7ff; color: #4338ca; }
+        .badge-S { background: #ede9fe; color: #6d28d9; }
+        .badge-E { background: #ffedd5; color: #c2410c; }
+        .badge-D { background: #f3e8ff; color: #7c3aed; }
+
+        .support-yes { color: var(--success); font-weight: 600; }
+        .support-no { color: var(--text-muted); }
+
+        /* Error */
+        .error {
+            display: none;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: var(--radius);
+            padding: 1rem 1.5rem;
+            color: #dc2626;
+            margin-bottom: 1rem;
+        }
+        .error.active { display: block; }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        .footer a { color: var(--primary); text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.5rem; }
+            .header p { font-size: 0.9rem; }
+            .container { padding: 1rem 0.75rem; }
+            .results-table { display: block; overflow-x: auto; }
+            .search-actions { flex-direction: column; align-items: stretch; }
+            .btn { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>SHL Assessment Recommender</h1>
+        <p>Find the right assessments for your hiring needs</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-title">Enter a job description, query, or URL</div>
+            <textarea
+                id="queryInput"
+                placeholder="e.g. I am hiring for Java developers who can also collaborate effectively with my business teams..."
+            ></textarea>
+            <div class="search-actions">
+                <button class="btn" id="searchBtn" onclick="search()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    Get Recommendations
+                </button>
+                <span style="color:var(--text-muted);font-size:0.85rem" id="timing"></span>
+            </div>
+            <div class="samples">
+                <span class="sample-chip" onclick="useSample(this)">Java developers who collaborate with teams</span>
+                <span class="sample-chip" onclick="useSample(this)">Mid-level Python, SQL and JavaScript professionals</span>
+                <span class="sample-chip" onclick="useSample(this)">Cognitive and personality tests for analysts</span>
+                <span class="sample-chip" onclick="useSample(this)">Graduate hiring assessment battery</span>
+            </div>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing query and finding best assessments...</p>
+        </div>
+
+        <div class="results" id="results">
+            <div class="results-header">
+                <h2>Recommended Assessments</h2>
+                <span class="results-count" id="resultsCount"></span>
+            </div>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Assessment</th>
+                        <th>Test Type</th>
+                        <th>Duration</th>
+                        <th>Remote</th>
+                        <th>Adaptive</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="footer">
+        Powered by Hybrid Search + LLM Re-ranking &middot;
+        <a href="/docs" target="_blank">API Docs</a> &middot;
+        <a href="/health" target="_blank">Health Check</a>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        const TYPE_NAMES = {
+            K: "Knowledge & Skills",
+            P: "Personality & Behavior",
+            A: "Ability & Aptitude",
+            B: "Biodata & SJT",
+            C: "Competencies",
+            S: "Simulations",
+            E: "Exercises",
+            D: "Development & 360"
+        };
+
+        function useSample(el) {
+            document.getElementById("queryInput").value = el.textContent;
+            search();
+        }
+
+        async function search() {
+            const query = document.getElementById("queryInput").value.trim();
+            if (!query) {
+                showError("Please enter a query or job description.");
+                return;
+            }
+
+            const btn = document.getElementById("searchBtn");
+            const loading = document.getElementById("loading");
+            const results = document.getElementById("results");
+            const error = document.getElementById("error");
+            const timing = document.getElementById("timing");
+
+            btn.disabled = true;
+            loading.classList.add("active");
+            results.classList.remove("active");
+            error.classList.remove("active");
+            timing.textContent = "";
+
+            const startTime = performance.now();
+
+            try {
+                const resp = await fetch(`${API_BASE}/recommend`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query })
+                });
+
+                if (!resp.ok) {
+                    const data = await resp.json().catch(() => ({}));
+                    throw new Error(data.detail || `Server error (${resp.status})`);
+                }
+
+                const data = await resp.json();
+                const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+                timing.textContent = `${elapsed}s`;
+
+                renderResults(data.recommended_assessments);
+
+            } catch (err) {
+                showError(err.message || "Failed to connect to the API.");
+            } finally {
+                btn.disabled = false;
+                loading.classList.remove("active");
+            }
+        }
+
+        function renderResults(assessments) {
+            const tbody = document.getElementById("resultsBody");
+            const container = document.getElementById("results");
+            const countEl = document.getElementById("resultsCount");
+
+            if (!assessments || assessments.length === 0) {
+                showError("No assessments found for this query. Try a different description.");
+                return;
+            }
+
+            countEl.textContent = `${assessments.length} result${assessments.length > 1 ? "s" : ""}`;
+
+            tbody.innerHTML = assessments.map((a, i) => {
+                const badges = (a.test_type || [])
+                    .map(t => `<span class="badge badge-${t}" title="${TYPE_NAMES[t] || t}">${t}</span>`)
+                    .join(" ");
+
+                const desc = a.description
+                    ? `<div class="assessment-desc">${escHtml(a.description)}</div>`
+                    : "";
+
+                const dur = a.duration > 0 ? `${a.duration} min` : "-";
+                const remote = a.remote_support === "Yes"
+                    ? '<span class="support-yes">Yes</span>'
+                    : '<span class="support-no">No</span>';
+                const adaptive = a.adaptive_support === "Yes"
+                    ? '<span class="support-yes">Yes</span>'
+                    : '<span class="support-no">No</span>';
+
+                return `<tr>
+                    <td style="color:var(--text-muted);font-weight:600">${i + 1}</td>
+                    <td>
+                        <a class="assessment-name" href="${escHtml(a.url)}" target="_blank" rel="noopener">${escHtml(a.name)}</a>
+                        ${desc}
+                    </td>
+                    <td>${badges || "-"}</td>
+                    <td>${dur}</td>
+                    <td>${remote}</td>
+                    <td>${adaptive}</td>
+                </tr>`;
+            }).join("");
+
+            container.classList.add("active");
+        }
+
+        function showError(msg) {
+            const el = document.getElementById("error");
+            el.textContent = msg;
+            el.classList.add("active");
+        }
+
+        function escHtml(str) {
+            const div = document.createElement("div");
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        document.getElementById("queryInput").addEventListener("keydown", function(e) {
+            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                search();
+            }
+        });
+    </script>
+</body>
+</html>
