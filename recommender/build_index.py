@@ -12,6 +12,7 @@ Usage:
 """
 
 import json
+import os
 import pickle
 import logging
 import re
@@ -19,6 +20,13 @@ from pathlib import Path
 
 import numpy as np
 import faiss
+
+# Use project model_cache (same as engine) so model is shared and pre-downloadable at build.
+_model_cache = Path(__file__).resolve().parent.parent / "model_cache" = Path(__file__).resolve().parent.parent / "model_cache"
+if not os.environ.get("SENTENCE_TRANSFORMERS_HOME"):
+    os.environ["SENTENCE_TRANSFORMERS_HOME"] = str(_model_cache)
+_model_cache.mkdir(parents=True, exist_ok=True)
+
 from sentence_transformers import SentenceTransformer
 from rank_bm25 import BM25Okapi
 

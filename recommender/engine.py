@@ -37,6 +37,14 @@ from typing import Optional
 
 import numpy as np
 import faiss
+
+# Use project model_cache so build can pre-download and runtime loads from disk (no network).
+_engine_root = Path(__file__).resolve().parent.parent
+_model_cache = _engine_root / "model_cache"
+if not os.environ.get("SENTENCE_TRANSFORMERS_HOME"):
+    os.environ["SENTENCE_TRANSFORMERS_HOME"] = str(_model_cache)
+_model_cache.mkdir(parents=True, exist_ok=True)
+
 from sentence_transformers import SentenceTransformer
 
 log = logging.getLogger(__name__)
