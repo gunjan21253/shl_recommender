@@ -2,8 +2,32 @@
 
 An intelligent recommendation engine that finds relevant SHL Individual Test Solutions from natural language queries or job descriptions. Built with **Hybrid Search (FAISS + BM25) + LLM Re-ranking** for high Recall@10.
 
-**Live Demo:** `<your-deployment-url>`
-**API Endpoint:** `<your-api-url>`
+**Live Demo:** https://shl-recommender-tkj0.onrender.com/
+**API Endpoint:** https://shl-recommender-tkj0.onrender.com/recommend
+
+---
+
+## Implementation and evaluation (in this repo)
+
+This repository contains both the **implementation** and **evaluation** as required:
+
+| Part | Location | What it does |
+|------|----------|--------------|
+| **Implementation** | `api/`, `recommender/`, `scraper/`, `frontend/` | Full pipeline: scraping, indexing, hybrid search, LLM re-ranking, FastAPI + UI. |
+| **Evaluation** | `evaluation/` | Scripts to measure and iterate on the system. |
+
+**Evaluation scripts:**
+
+- **`evaluation/evaluate.py`** — Computes Mean Recall@10, Precision@10, NDCG@10 on the labeled train set (10 queries, sheet `Train-Set`). Run:  
+  `python -m evaluation.evaluate --data "Gen_AI Dataset.xlsx" --sheet "Train-Set" --direct`
+- **`evaluation/generate_predictions.py`** — Generates the submission CSV for the 9 test queries (sheet `Test-Set`). Run:  
+  `python -m evaluation.generate_predictions --test "Gen_AI Dataset.xlsx" --sheet "Test-Set" --output submission.csv --direct`
+- **`evaluation/diagnose.py`** — Diagnoses retrieval vs ranking misses (optional). Run:  
+  `python -m evaluation.diagnose --data "Gen_AI Dataset.xlsx" --sheet "Train-Set"`
+
+Train/test data: `Gen_AI Dataset.xlsx` (sheets `Train-Set` and `Test-Set`). Place it in the project root to run evaluation.
+
+---
 
 ### Submission (SHL assignment)
 

@@ -30,11 +30,11 @@ Complete these 5 items and submit via the assignment form.
    - **Environment:** Add variable `GEMINI_API_KEY` = your Gemini API key (from [Google AI Studio](https://ai.google.dev/gemini-api/docs)).
    - Create Web Service. Wait for deploy to finish.
 
-4. **Copy the live URL** (e.g. `https://shl-recommender-xxxx.onrender.com`).  
+4. **Copy the live URL** (e.g. `https://shl-recommender-tkj0.onrender.com`).  
    **Submit this as “API URL”** in the form.
 
 **Verify:**  
-`curl https://YOUR-APP-URL/health` → `{"status":"healthy"}`
+`curl https://shl-recommender-tkj0.onrender.com/health` → `{"status":"healthy"}`
 
 ---
 
@@ -53,13 +53,13 @@ Complete these 5 items and submit via the assignment form.
    git add .
    git commit -m "SHL Assessment Recommender submission"
    git branch -M main
-   git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
+   git remote add origin https://github.com/gunjan21253/shl_recommender.git
    git push -u origin main
    ```
 
    (Use your actual repo URL. If the repo already exists and you’ve already pushed, just run `git add .` and `git push`.)
 
-3. **Submit the repo URL** in the form (e.g. `https://github.com/YOUR_USERNAME/YOUR_REPO`).
+3. **Submit the repo URL** in the form: `https://github.com/gunjan21253/shl_recommender`
 
 **Note:** `.env` is in `.gitignore` — do not commit your API key. Set `GEMINI_API_KEY` only in Render’s environment.
 
@@ -73,7 +73,7 @@ Complete these 5 items and submit via the assignment form.
 The app serves the web UI at the root path (`/`). So:
 
 - **Frontend URL** = **API URL**  
-  Example: `https://shl-recommender-xxxx.onrender.com`
+  Example: `https://shl-recommender-tkj0.onrender.com`
 
 Submit this same URL as “Frontend URL” in the form.
 
@@ -127,8 +127,8 @@ Then **upload the PDF** in the assignment form.
 
 | # | Item        | What to submit |
 |---|-------------|----------------|
-| 1 | API URL     | Your Render (or other) app URL, e.g. `https://xxx.onrender.com` |
-| 2 | GitHub URL  | Your repo URL, e.g. `https://github.com/username/repo` |
+| 1 | API URL     | https://shl-recommender-tkj0.onrender.com |
+| 2 | GitHub URL  | https://github.com/gunjan21253/shl_recommender |
 | 3 | Frontend URL| **Same as API URL** (UI is served at `/`) |
 | 4 | 2-page PDF  | Export of `SUBMISSION_APPROACH.md` → upload PDF |
 | 5 | CSV         | `submission.csv` from this repo |

@@ -252,6 +252,7 @@
     <div class="header">
         <h1>SHL Assessment Recommender</h1>
         <p>Find the right assessments for your hiring needs</p>
+        <p style="font-size:0.85rem;opacity:0.85;margin-top:0.5rem">First visit may take 1–2 min while the server starts (free tier).</p>
     </div>
 
     <div class="container">
@@ -282,6 +283,7 @@
 
         <div class="loading" id="loading">
             <div class="spinner"></div>
+            <p style="margin-top:0.6rem;color:var(--text-muted);font-size:0.9rem">First request can take 2–3 min (engine loads). Please wait.</p>
             <p>Analyzing query and finding best assessments...</p>
         </div>
 
@@ -351,13 +353,18 @@
             timing.textContent = "";
 
             const startTime = performance.now();
+            const timeoutMs = 5 * 60 * 1000; // 5 min (first request loads engine)
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
             try {
                 const resp = await fetch(`${API_BASE}/recommend`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ query })
+                    body: JSON.stringify({ query }),
+                    signal: controller.signal
                 });
+                clearTimeout(timeoutId);
 
                 if (!resp.ok) {
                     const data = await resp.json().catch(() => ({}));
@@ -371,7 +378,12 @@
                 renderResults(data.recommended_assessments);
 
             } catch (err) {
-                showError(err.message || "Failed to connect to the API.");
+                clearTimeout(timeoutId);
+                if (err.name === "AbortError") {
+                    showError("Request timed out (5 min). First request loads the engine — try again once; it may be ready now.");
+                } else {
+                    showError(err.message || "Failed to connect to the API.");
+                }
             } finally {
                 btn.disabled = false;
                 loading.classList.remove("active");

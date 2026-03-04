@@ -73,9 +73,9 @@ class RecommendResponse(BaseModel):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Don't load engine here — it takes 1–2 min and blocks port binding.
-    # Render times out waiting for an open port. Engine loads on first /recommend.
-    log.info("Starting up (engine will load on first request)...")
+    # Do not load engine at startup — keeps server light so / and /health always work.
+    # Engine loads on first /recommend (may take 1–2 min; Render free tier has 512MB RAM).
+    log.info("Starting up (engine loads on first /recommend request)...")
     yield
     log.info("Shutting down")
 

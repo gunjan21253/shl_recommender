@@ -25,7 +25,7 @@ Usage:
     python -m evaluation.generate_predictions --test data/test_queries.csv --output submission.csv --direct
 
     # Via API
-    python -m evaluation.generate_predictions --test "Gen_AI Dataset.xlsx" --sheet "Test-Set" --output submission.csv --api https://your-app.onrender.com
+    python -m evaluation.generate_predictions --test "Gen_AI Dataset.xlsx" --sheet "Test-Set" --output submission.csv --api https://shl-recommender-tkj0.onrender.com
 """
 
 import argparse
