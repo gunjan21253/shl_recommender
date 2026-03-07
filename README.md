@@ -29,16 +29,6 @@ Train/test data: `Gen_AI Dataset.xlsx` (sheets `Train-Set` and `Test-Set`). Plac
 
 ---
 
-### Submission (SHL assignment)
-
-**See [SUBMISSION_CHECKLIST.md](SUBMISSION_CHECKLIST.md) for step-by-step instructions for all 5 submission items.**
-
-- **3 URLs:** API, GitHub repo, Web frontend (Frontend URL = API URL; UI is served at `/`).
-- **2-page document:** Export `SUBMISSION_APPROACH.md` to PDF (e.g. run `python scripts/export_approach_to_html.py`, open the HTML in a browser, Print → Save as PDF).
-- **CSV:** `submission.csv` (columns `Query`, `Assessment_url`). Regenerate with the command in §7 below if needed.
-
----
-
 ## Architecture
 
 ```
@@ -229,38 +219,6 @@ shl_recommendation/
 | **Balance Enforcement** | Ensures K+P type mix when query spans technical and soft skills |
 | **URL Normalization** | Handles inconsistent URL formats across training labels |
 | **Constraint Extraction** | Parses duration limits ("40 minutes") and remote requirements from query |
-
----
-
-## Deployment
-
-### Render (Recommended)
-
-1. Push to GitHub
-2. Create a new **Web Service** on [Render](https://render.com)
-3. Connect your GitHub repo
-4. Render auto-detects `render.yaml`
-5. Add `GEMINI_API_KEY` in Environment settings
-
-### Railway
-
-```bash
-npm install -g @railway/cli
-railway login
-railway init
-railway variables set GEMINI_API_KEY=your_key
-railway up
-```
-
-### Manual (any VPS)
-
-```bash
-pip install -r requirements.txt
-export GEMINI_API_KEY=your_key
-uvicorn api.main:app --host 0.0.0.0 --port 8000
-```
-
-> **Note:** Pre-build indexes locally and commit the `data/` folder. The index files are small (~2MB total for 377 assessments).
 
 ---
 
